@@ -17,8 +17,9 @@ def list_all(mongo_collection):
     Lists all documents in a collection:
     Checks if collection is empty using count_documents
     """
+    result = []
     if mongo_collection.count_documents({}) == 0:
-        return []
+        return result
 
     for docx in mongo_collection.find():
-        return docx
+        return result.append(docx)
