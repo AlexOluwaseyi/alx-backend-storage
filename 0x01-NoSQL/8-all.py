@@ -23,4 +23,4 @@ def list_all(mongo_collection):
 
     for docx in mongo_collection.find():
         result.append(docx)
-        return result
+    return result
