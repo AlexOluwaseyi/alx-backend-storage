@@ -19,7 +19,7 @@ from functools import wraps
 from uuid import uuid4
 from typing import Callable, Union
 
-union = Union[str, int, bytes, float]
+union = Union[str, bytes, int, float]
 
 
 def count_calls(method: Callable) -> Callable:
@@ -33,9 +33,7 @@ def count_calls(method: Callable) -> Callable:
         """incrememter"""
         key = method.__qualname__
         count = self._redis.incr(key)
-        '''
-        nonlocal call_count
-        call_count += 1'''
+        #return count
         return method(self, *args, **kwargs)
 
     return wrapper
@@ -84,8 +82,7 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
-    @count_calls
-    @call_history
+
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         store method that takes a data argument and returns a string.
@@ -113,10 +110,16 @@ class Cache:
         """
         Retrieve data from the cache and convert to string
         """
-        return self.get(key, fn=lambda x: x.decode("utf-8"))
+        data = self._redis.get(key)
+        return data.decode("utf-8")
 
     def get_int(self, key: str) -> int:
         """
         Retrieve data from the cache and convert to integer
         """
-        return self.get(key, fn=int)
+        data = self._redis.get(key)
+        try:
+            data = int(value.decode("utf-8"))
+        except Exception:
+            data = 0
+        return data
