@@ -26,14 +26,13 @@ def count_calls(method: Callable) -> Callable:
     """
     Decorator to count the number of times a method is called.
     """
-    call_count = 0
+    key = method.__qualname__
 
     @wraps(method)
     def wrapper(self, *args, **kwargs):
         """incrememter"""
-        key = method.__qualname__
-        count = self._redis.incr(key)
-        #return count
+        # key = method.__qualname__
+        self._redis.incr(key)
         return method(self, *args, **kwargs)
 
     return wrapper
@@ -44,6 +43,9 @@ def call_history(method: Callable) -> Callable:
     decorator to store the history of inputs and outputs
     for a particular function.
     """
+    key = method.__qualname__
+    inputs = key + ":inputs"
+    outputs = key + ":outputs"
 
     @wraps(method)
     def historian(self, *args):
@@ -55,16 +57,13 @@ def call_history(method: Callable) -> Callable:
         will add its input parameters to one list in
         redis, and store its output into another list.
         """
-        key = method.__qualname__
-        inputs_key = key + ":inputs"
-        inputList = self._redis.rpush(inputs_key, str(args))
+        self._redis.rpush(inputs, str(args))
 
         # Calls the method and saves the output in result
         result = method(self, *args)
 
-        outputs_key = key + ":outputs"
-        outputList = self._redis.rpush(outputs_key, result)
-        return outputList
+        self._redis.rpush(outputs, str(result))
+        return result
 
     return historian
 
@@ -82,7 +81,8 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
-
+    @call_history
+    @count_calls
     def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         store method that takes a data argument and returns a string.
