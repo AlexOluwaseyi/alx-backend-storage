@@ -15,10 +15,30 @@ be a str, bytes, int or float.
 """
 
 import redis
+from functools import wraps
 from uuid import uuid4
 from typing import Callable, Union
 
 union = Union[str, int, bytes, float]
+
+
+def count_calls(method: Callable) -> Callable:
+    """
+    Decorator to count the number of times a method is called.
+    """
+    call_count = 0
+
+    @wraps(method)
+    def wrapper(self, *args, **kwargs):
+        """incrememter"""
+        key = method.__qualname__
+        count = self._redis.incr(key)
+        '''
+        nonlocal call_count
+        call_count += 1'''
+        return method(self, *args, **kwargs)
+
+    return wrapper
 
 
 class Cache:
@@ -34,6 +54,7 @@ class Cache:
         self._redis = redis.Redis()
         self._redis.flushdb()
 
+    @count_calls
     def store(self, data: Union[str, int, bytes, float]) -> str:
         """
         store method that takes a data argument and returns a string.
