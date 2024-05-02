@@ -135,11 +135,6 @@ def replay(method: Callable):
     inputs = key + ":inputs"
     outputs = key + ":outputs"
 
-    #print("{} - {} - {}".format(key, inputs, outputs))
-    #print(type(key))
-    #print(dir(method))
-    #print(type(method.__call__))
-
     # Retrieve inputs and outputs from Redis
     input_list = method.__self__._redis.lrange(inputs, 0, -1)
     output_list = method.__self__._redis.lrange(outputs, 0, -1)
