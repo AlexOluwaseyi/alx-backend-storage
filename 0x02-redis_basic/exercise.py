@@ -86,7 +86,7 @@ class Cache:
 
     @count_calls
     @call_history
-    def store(self, data: Union[str, int, bytes, float]) -> str:
+    def store(self, data: Union[str, bytes, int, float]) -> str:
         """
         store method that takes a data argument and returns a string.
         The method should generate a random key (e.g. using uuid), store
